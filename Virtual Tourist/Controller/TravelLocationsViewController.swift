@@ -41,7 +41,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         annotation.coordinate = locationCoord
         
         self.travelLocationsMap.addAnnotation(annotation)
-        
+        addAnnotation()
     }
     
 }
@@ -68,6 +68,7 @@ extension TravelLocationsViewController {
     //This function will add the annotation whenver a long press gesture is recognized.
     func addAnnotation() {
         print("addAnnotation Called")
+        print(FlickrClient.sharedInstance().flickrURLFromParameters(FlickrClient.sharedInstance().buildURLParamters()))
     }
 }
 
