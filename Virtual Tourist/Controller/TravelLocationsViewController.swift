@@ -46,8 +46,13 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
     
     //This mapkit function will detect whenever an annotation is tapped, and will seque to the photo album view
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        print("Pin Selected!")
-        print(view.annotation?.coordinate)
+        let vc = storyboard?.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
+        
+//        vc.lat = Double((view.annotation?.coordinate.latitude)!)
+//        vc.long = Double((view.annotation?.coordinate.longitude)!)
+        vc.pin = view.annotation!
+        
+        present(vc, animated: true, completion: nil)
     }
     
     
@@ -74,7 +79,7 @@ extension TravelLocationsViewController {
 
     //This function will add the annotation whenver a long press gesture is recognized.
     func addAnnotation() {
-        print("addAnnotation Clicked!")
+        print("addAnnotation Called!")
     }
 }
 
