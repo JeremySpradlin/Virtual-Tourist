@@ -57,8 +57,7 @@ extension FlickrClient {
             let queryItem = URLQueryItem(name: key, value: "\(value)")
             components.queryItems!.append(queryItem)
         }
-        print(components.url!)
-        print("1")
+
         return components.url!
     }
     

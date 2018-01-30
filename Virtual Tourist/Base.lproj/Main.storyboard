@@ -36,7 +36,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
-                        <outlet property="travelLocationsMap" destination="dXV-71-HhS" id="G9l-Aw-dWg"/>
+                        <outlet property="mapView" destination="dXV-71-HhS" id="G9l-Aw-dWg"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
