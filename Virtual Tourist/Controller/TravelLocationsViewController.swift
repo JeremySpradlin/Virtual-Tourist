@@ -51,13 +51,15 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
 //        vc.lat = Double((view.annotation?.coordinate.latitude)!)
 //        vc.long = Double((view.annotation?.coordinate.longitude)!)
         vc.pin = view.annotation!
-        
+        FlickrClient.sharedInstance().taskForGetMethod() { (result, error) in
+            print("taskforget returned")
+            print(result!)
+        }
         present(vc, animated: true, completion: nil)
     }
     
     
 }
-
 
 extension TravelLocationsViewController {
 

@@ -11,15 +11,82 @@ import Foundation
 class FlickrClient: NSObject {
     
     //Mark: Variable Declaration
+    let session = URLSession.shared
     var pinLat: Double!
     var pinLong: Double!
     
     //Mark: TaskForGetMethod - Will send a get request to the flickr API and return a JSON object of photos
-//    func taskForGetMethod(_ completionHandlerForGet: @escaping (_ result: AnyObject?, _ error: NSError?) -> Void) -> URLSessionDataTask {
-//        
-//        
-//        
-//    }
+    func taskForGetMethod(_ completionHandlerForGet: @escaping (_ result: AnyObject?, _ error: NSError?) -> Void) -> URLSessionDataTask {
+        print("inside taskforget")
+        let request = URLRequest(url: flickrURLFromParameters(buildURLParamters()))
+        
+        let task = session.dataTask(with: request) { (data, response, error) in
+            print("inside task")
+            // if an error occurs, print it and re-enable the UI
+            func displayError(_ error: String) {
+                print(error)
+                performUIUpdatesOnMain {
+//                    self.setUIEnabled(true)
+//                    self.photoTitleLabel.text = "No photo returned. Try again."
+//                    self.photoImageView.image = nil
+                }
+            }
+            
+            /* GUARD: Was there an error? */
+            guard (error == nil) else {
+                displayError("There was an error with your request: \(error)")
+                return
+            }
+            
+            /* GUARD: Did we get a successful 2XX response? */
+            guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299 else {
+                displayError("Your request returned a status code other than 2xx!")
+                return
+            }
+            
+            /* GUARD: Was there any data returned? */
+            guard let data = data else {
+                displayError("No data was returned by the request!")
+                return
+            }
+            
+            // parse the data
+            let parsedResult: [String:AnyObject]!
+            do {
+                parsedResult = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String:AnyObject]
+            } catch {
+                displayError("Could not parse the data as JSON: '\(data)'")
+                return
+            }
+            
+            /* GUARD: Did Flickr return an error (stat != ok)? */
+            guard let stat = parsedResult[FlickrConstants.FlickrResponseKeys.Status] as? String, stat == FlickrConstants.FlickrResponseValues.OKStatus else {
+                displayError("Flickr API returned an error. See error code and message in \(parsedResult)")
+                return
+            }
+            
+            /* GUARD: Is "photos" key in our result? */
+            guard let photosDictionary = parsedResult[FlickrConstants.FlickrResponseKeys.Photos] as? [String:AnyObject] else {
+                displayError("Cannot find keys '\(FlickrConstants.FlickrResponseKeys.Photos)' in \(parsedResult)")
+                return
+            }
+            
+            /* GUARD: Is "pages" key in the photosDictionary? */
+            guard let totalPages = photosDictionary[FlickrConstants.FlickrResponseKeys.Pages] as? Int else {
+                displayError("Cannot find key '\(FlickrConstants.FlickrResponseKeys.Pages)' in \(photosDictionary)")
+                return
+            }
+            print(photosDictionary)
+            // pick a random page!
+            //let pageLimit = min(totalPages, 40)
+            //let randomPage = Int(arc4random_uniform(UInt32(pageLimit))) + 1
+            //self.displayImageFromFlickrBySearch(methodParameters, withPageNumber: randomPage)
+        }
+        
+        // start the task!
+        task.resume()
+        return task
+    }
     
 }
 
@@ -40,7 +107,18 @@ extension FlickrClient {
     }
     
     func bboxString() -> String {
-        return ("-81.281566, 25.300159, -79.281566, 27.300159")
+        
+        if let latitude = pinLat, let longitude = pinLong {
+            let minimumLon = max(longitude - FlickrConstants.Flickr.SearchBBoxHalfWidth, FlickrConstants.Flickr.SearchLonRange.0)
+            let minimumLat = max(latitude - FlickrConstants.Flickr.SearchBBoxHalfHeight, FlickrConstants.Flickr.SearchLatRange.0)
+            let maximumLon = min(longitude + FlickrConstants.Flickr.SearchBBoxHalfWidth, FlickrConstants.Flickr.SearchLonRange.1)
+            let maximumLat = min(latitude + FlickrConstants.Flickr.SearchBBoxHalfHeight, FlickrConstants.Flickr.SearchLatRange.1)
+            return "\(minimumLon),\(minimumLat),\(maximumLon),\(maximumLat)"
+        } else {
+            return "0,0,0,0"
+        }
+        
+        //return ("-81.281566, 25.300159, -79.281566, 27.300159")
     }
     
     
