@@ -41,21 +41,24 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         annotation.coordinate = locationCoord
 
         self.mapView.addAnnotation(annotation)
-        addAnnotation()
     }
     
     //This mapkit function will detect whenever an annotation is tapped, and will seque to the photo album view
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         let vc = storyboard?.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
         
-//        vc.lat = Double((view.annotation?.coordinate.latitude)!)
-//        vc.long = Double((view.annotation?.coordinate.longitude)!)
         vc.pin = view.annotation!
-        FlickrClient.sharedInstance().taskForGetMethod() { (result, error) in
-            print("taskforget returned")
-            print(result!)
-        }
-        present(vc, animated: true, completion: nil)
+        FlickrClient.sharedInstance().pinLat = Double((view.annotation?.coordinate.latitude)!)
+        FlickrClient.sharedInstance().pinLong = Double((view.annotation?.coordinate.longitude)!)
+        
+//        FlickrClient.sharedInstance().taskForGetMethod() { (result, error) in
+//            print("taskforget returned")
+//            //print(result!)
+//            self.present(vc, animated: true, completion: nil)
+//
+//        }
+        self.present(vc, animated: true, completion: nil)
+
     }
     
     
@@ -77,11 +80,6 @@ extension TravelLocationsViewController {
         UserDefaults.standard.set(mapView.region.span.longitudeDelta, forKey: "storedLongitudeDelta")
         UserDefaults.standard.set(mapView.region.center.latitude, forKey: "storedLat")
         UserDefaults.standard.set(mapView.region.center.longitude, forKey: "storedLong")
-    }
-
-    //This function will add the annotation whenver a long press gesture is recognized.
-    func addAnnotation() {
-        print("addAnnotation Called!")
     }
 }
 

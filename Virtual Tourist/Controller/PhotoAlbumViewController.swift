@@ -20,8 +20,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, MKMa
     
     //MARK: Variable Declaration
     var pin: MKAnnotation!
-//    var lat: Double!
-//    var long: Double!
+
     
     
     override func viewDidLoad() {
@@ -34,6 +33,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, MKMa
         let region = MKCoordinateRegionMake(annotation.coordinate, MKCoordinateSpanMake(0.1, 0.1))
         self.mapView.setRegion(region, animated: true)
         self.mapView.addAnnotation(annotation)
+        
+        FlickrClient.sharedInstance().taskForGetMethod() { (result, error) in
+            print("taskforget returned")
+            //print(result!)            
+        }
     }
     
     

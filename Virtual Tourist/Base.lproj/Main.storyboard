@@ -75,19 +75,33 @@
                                 <rect key="frame" x="0.0" y="218" width="375" height="411"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="dSe-D1-p6o">
-                                    <size key="itemSize" width="50" height="50"/>
+                                    <size key="itemSize" width="129" height="121"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="AHT-Vh-AmP">
-                                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="AHT-Vh-AmP" customClass="PhotoAlbumCollectionViewCell" customModule="Virtual_Tourist" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="129" height="121"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
-                                            <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="129" height="121"/>
                                             <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="AIo-dm-cEb">
+                                                    <rect key="frame" x="0.0" y="0.0" width="129" height="121"/>
+                                                </imageView>
+                                            </subviews>
                                         </view>
+                                        <constraints>
+                                            <constraint firstAttribute="bottom" secondItem="AIo-dm-cEb" secondAttribute="bottom" id="0oJ-bl-nfq"/>
+                                            <constraint firstItem="AIo-dm-cEb" firstAttribute="top" secondItem="AHT-Vh-AmP" secondAttribute="top" id="6t7-ow-ocW"/>
+                                            <constraint firstItem="AIo-dm-cEb" firstAttribute="leading" secondItem="AHT-Vh-AmP" secondAttribute="leading" id="qDw-yD-owq"/>
+                                            <constraint firstAttribute="trailing" secondItem="AIo-dm-cEb" secondAttribute="trailing" id="vEX-sg-haG"/>
+                                        </constraints>
+                                        <connections>
+                                            <outlet property="cellImageView" destination="AIo-dm-cEb" id="bJT-9I-JUV"/>
+                                        </connections>
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
