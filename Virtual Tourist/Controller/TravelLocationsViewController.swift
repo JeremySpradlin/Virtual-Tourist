@@ -8,14 +8,16 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
     
     //MARK: Outlet Declarations
     @IBOutlet weak var mapView: MKMapView!
     
+    //Mark: Variable Declarations
+    var oldPins: [Pin] = []
     
-
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -25,9 +27,20 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
             if let storedLongitudeDelta = UserDefaults.standard.value(forKey: "storedLongitudeDelta") {
                 if let storedLat = UserDefaults.standard.value(forKey: "storedLat") {
                     if let storedLong = UserDefaults.standard.value(forKey: "storedLong") {
-                        setMap(storedLatitudeDelta as! Double, storedLongitudeDelta as! Double, lat: storedLat as! Double, long: storedLong as! Double)
+                        setMapRegion(storedLatitudeDelta as! Double, storedLongitudeDelta as! Double, lat: storedLat as! Double, long: storedLong as! Double)
                     }
                 }
+            }
+        }
+        
+        //Obtain old pins from Core Data and set them in a variable for the mapview to add
+        let oldPins = loadOldPins()
+        if oldPins != nil {
+            for pin in oldPins! {
+                let coord = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
+                let pinToAdd = MKPointAnnotation()
+                pinToAdd.coordinate = coord
+                mapView.addAnnotation(pinToAdd)
             }
         }
     }
@@ -39,8 +52,9 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         let annotation = MKPointAnnotation()
 
         annotation.coordinate = locationCoord
-
+        savePin(pin: annotation)
         self.mapView.addAnnotation(annotation)
+
     }
     
     //This mapkit function will detect whenever an annotation is tapped, and will seque to the photo album view
@@ -51,14 +65,9 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         FlickrClient.sharedInstance().pinLat = Double((view.annotation?.coordinate.latitude)!)
         FlickrClient.sharedInstance().pinLong = Double((view.annotation?.coordinate.longitude)!)
         
-//        FlickrClient.sharedInstance().taskForGetMethod() { (result, error) in
-//            print("taskforget returned")
-//            //print(result!)
-//            self.present(vc, animated: true, completion: nil)
-//
-//        }
+        
+        
         self.present(vc, animated: true, completion: nil)
-
     }
     
     
@@ -67,19 +76,66 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
 extension TravelLocationsViewController {
 
     //This function will take in the lat and long and deltas and set the maps location upon loading.
-    func setMap(_ latDelta: Double, _ longDelta: Double, lat: Double, long: Double) {
+    func setMapRegion(_ latDelta: Double, _ longDelta: Double, lat: Double, long: Double) {
         mapView.region.span.latitudeDelta = latDelta
         mapView.region.span.longitudeDelta = longDelta
         mapView.region.center.latitude = lat
         mapView.region.center.longitude = long
     }
 
-    //This app will store the current map lat/long and delta and store it in user defaults
+    //This function will store the current map lat/long and delta and store it in user defaults
     func storeMap() {
         UserDefaults.standard.set(mapView.region.span.latitudeDelta, forKey: "storedLatitudeDelta")
         UserDefaults.standard.set(mapView.region.span.longitudeDelta, forKey: "storedLongitudeDelta")
         UserDefaults.standard.set(mapView.region.center.latitude, forKey: "storedLat")
         UserDefaults.standard.set(mapView.region.center.longitude, forKey: "storedLong")
+    }
+    
+    //This function will return the CoreDataStack for use within the code
+    func getDataStack() -> CoreDataStack {
+        let delegate = UIApplication.shared.delegate as! AppDelegate
+        return delegate.stack!
+    }
+    
+    //This function will read CoreData and load the pins to the mapview
+    func loadOldPins() -> [Pin]? {
+
+        var pins: [Pin] = []
+        
+        do {
+            let fetchedResultsController = getFetchedResultsController()
+            try fetchedResultsController.performFetch()
+            let pinCount = try fetchedResultsController.managedObjectContext.count(for: fetchedResultsController.fetchRequest)
+            for index in 0..<pinCount {
+                pins.append(fetchedResultsController.object(at: IndexPath(row: index, section: 0)) as! Pin)
+            }
+            return pins
+        } catch {
+            print("Loading Old Pins")
+            return nil
+        }
+        
+    }
+    
+    //This function creates the Fetch Results Controller
+    func getFetchedResultsController() -> NSFetchedResultsController<NSFetchRequestResult> {
+        let stack = getDataStack()
+        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
+        fr.sortDescriptors = []
+        return NSFetchedResultsController(fetchRequest: fr, managedObjectContext: stack.context, sectionNameKeyPath: nil, cacheName: nil)
+    }
+    
+    func savePin(pin: MKAnnotation) {
+        
+        let coord = pin.coordinate
+        let pin = Pin(latitude: coord.latitude, longitude: coord.longitude, context: getDataStack().context)
+        do{
+            try getDataStack().saveContext()
+        } catch {
+            print("Error Saving Pin")
+        }
+        oldPins.append(pin)
+        
     }
 }
 
