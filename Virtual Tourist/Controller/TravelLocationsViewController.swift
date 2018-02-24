@@ -44,6 +44,8 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
             }
         }
     }
+    
+    
     //This IBAction is called whenever a long press gesture is recognized.  It will get the location that the long press was recognized on, convert it to coordinates, and then add an annotation at said location.
     @IBAction func longPressGesture(_ sender: UILongPressGestureRecognizer) {
 
@@ -54,20 +56,20 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate {
         annotation.coordinate = locationCoord
         savePin(pin: annotation)
         self.mapView.addAnnotation(annotation)
-
     }
     
     //This mapkit function will detect whenever an annotation is tapped, and will seque to the photo album view
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        let vc = storyboard?.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
-        
-        vc.pin = view.annotation!
-        FlickrClient.sharedInstance().pinLat = Double((view.annotation?.coordinate.latitude)!)
-        FlickrClient.sharedInstance().pinLong = Double((view.annotation?.coordinate.longitude)!)
+//        let vc = storyboard?.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
         
         
+//        vc.pin = view.annotation!
+//        FlickrClient.sharedInstance().pinLat = Double((view.annotation?.coordinate.latitude)!)
+//        FlickrClient.sharedInstance().pinLong = Double((view.annotation?.coordinate.longitude)!)
         
-        self.present(vc, animated: true, completion: nil)
+//        self.present(vc, animated: true, completion: nil)
+        print("Hitting performSegue")
+        performSegue(withIdentifier: "PhotoAlbumViewController", sender: view.annotation?.coordinate)
     }
     
     
@@ -111,10 +113,9 @@ extension TravelLocationsViewController {
             }
             return pins
         } catch {
-            print("Loading Old Pins")
+            print("Error loading Old Pins")
             return nil
         }
-        
     }
     
     //This function creates the Fetch Results Controller
@@ -125,6 +126,7 @@ extension TravelLocationsViewController {
         return NSFetchedResultsController(fetchRequest: fr, managedObjectContext: stack.context, sectionNameKeyPath: nil, cacheName: nil)
     }
     
+    //This function will take an annotation and save it in coredata
     func savePin(pin: MKAnnotation) {
         
         let coord = pin.coordinate
@@ -135,7 +137,23 @@ extension TravelLocationsViewController {
             print("Error Saving Pin")
         }
         oldPins.append(pin)
-        
+    }
+    
+    //This function prepares for the segue
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        print("Inside Prepare for segue function")
+        if segue.identifier == "PhotoAlbumViewController" {
+            let vc = segue.destination as! PhotoAlbumViewController
+            let coord = sender as! CLLocationCoordinate2D
+            
+            for pin in oldPins {
+                print("Inside for pin loop")
+                if pin.latitude == coord.latitude && pin.longitude == coord.longitude {
+                    vc.pin = pin
+                    FlickrClient.sharedInstance().pin = pin
+                }
+            }
+        }
     }
 }
 

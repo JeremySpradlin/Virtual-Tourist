@@ -14,11 +14,12 @@ class FlickrClient: NSObject {
     let session = URLSession.shared
     var pinLat: Double!
     var pinLong: Double!
+    var pin: Pin!
     
     //Mark: TaskForGetMethod - Will send a get request to the flickr API and return a JSON object of photos
-    func taskForGetMethod(_ completionHandlerForGet: @escaping (_ result: [String:AnyObject]?, _ error: NSError?) -> Void) -> URLSessionDataTask {
+    func taskForGetMethod(_ completionHandlerForGet: @escaping (_ result: [[String:AnyObject]]?, _ error: NSError?) -> Void) -> URLSessionDataTask {
         let request = URLRequest(url: flickrURLFromParameters(buildURLParamters()))
-        
+        print(request)
         let task = session.dataTask(with: request) { (data, response, error) in
             // if an error occurs, print it and re-enable the UI
             func displayError(_ error: String) {
@@ -64,9 +65,11 @@ class FlickrClient: NSObject {
                 displayError("Cannot find keys '\(FlickrConstants.FlickrResponseKeys.Photos)' in \(parsedResult)")
                 return
             }
-            
-            completionHandlerForGet(photosDictionary, nil)
-
+            guard let photosArray = photosDictionary["photo"] as? [[String:AnyObject]] else {
+                displayError("Cannot find photos in \(photosDictionary)")
+                return
+            }
+            completionHandlerForGet(photosArray, nil)
         }
         
         // start the task!
@@ -93,6 +96,8 @@ extension FlickrClient {
     }
     
     func bboxString() -> String {
+        pinLat = pin.latitude
+        pinLong = pin.longitude
         if let latitude = pinLat, let longitude = pinLong {
             let minimumLon = max(longitude - FlickrConstants.Flickr.SearchBBoxHalfWidth, FlickrConstants.Flickr.SearchLonRange.0)
             let minimumLat = max(latitude - FlickrConstants.Flickr.SearchBBoxHalfHeight, FlickrConstants.Flickr.SearchLatRange.0)
